@@ -1,0 +1,452 @@
+{
+  "Homepage": {
+    "title": "<strong>Gemensams</strong> — ekonomi för de med gemensam ekonomi",
+    "description": "ekonomi för de med gemensam ekonomi som gör dig transparent.",
+    "button": {
+      "groups": "Gå till grupper",
+      "github": "GitHub"
+    }
+  },
+  "Header": {
+    "groups": "Grupper"
+  },
+  "Footer": {
+    "madeIn": "Made in Montréal, Québec 🇨🇦",
+    "builtBy": "Byggt av <author>Sebastien Castiel</author> och <source>bidragsgivare</source>"
+  },
+  "Expenses": {
+    "title": "Utgifter",
+    "description": "Här är utgifterna som du har skapat för din grupp.",
+    "create": "Skapa utgift",
+    "createFirst": "Skapa den första",
+    "noExpenses": "Din grupp innehåller inga utgifter ännu.",
+    "export": "Exportera",
+    "exportJson": "Exportera till JSON",
+    "exportCsv": "Exportera till CSV",
+    "searchPlaceholder": "Sök efter en utgift…",
+    "ActiveUserModal": {
+      "title": "Vem är du?",
+      "description": "Berätta vilken deltagare du är så att vi kan anpassa hur informationen visas.",
+      "nobody": "Jag vill inte välja någon",
+      "save": "Spara ändringar",
+      "footer": "Denna inställning kan ändras senare i gruppinställningarna."
+    },
+    "Groups": {
+      "upcoming": "Kommande",
+      "thisWeek": "Den här veckan",
+      "earlierThisMonth": "Tidigare denna månad",
+      "lastMonth": "Förra månaden",
+      "earlierThisYear": "Tidigare i år",
+      "lastYear": "Förra året",
+      "older": "Äldre"
+    }
+  },
+  "ExpenseCard": {
+    "paidBy": "Betald av <strong>{paidBy}</strong> för <paidFor></paidFor>",
+    "everyone": "alla",
+    "receivedBy": "Mottagen av <strong>{paidBy}</strong> för <paidFor></paidFor>",
+    "yourBalance": "Ditt saldo:",
+    "notInvolved": "Du är inte inblandad"
+  },
+  "Groups": {
+    "myGroups": "Mina grupper",
+    "create": "Skapa",
+    "loadingRecent": "Laddar senaste grupper…",
+    "NoRecent": {
+      "description": "Du har inte besökt någon grupp nyligen.",
+      "create": "Skapa en",
+      "orAsk": "eller be en vän skicka dig länken till en befintlig grupp."
+    },
+    "recent": "Senaste grupper",
+    "starred": "Stjärnmärkta grupper",
+    "archived": "Arkiverade grupper",
+    "archive": "Arkivera grupp",
+    "unarchive": "Avarkivera grupp",
+    "removeRecent": "Ta bort från senaste grupper",
+    "RecentRemovedToast": {
+      "title": "Gruppen har tagits bort",
+      "description": "Gruppen togs bort från din lista över senaste grupper.",
+      "undoAlt": "Ångra borttagning av grupp",
+      "undo": "Ångra"
+    },
+    "AddByURL": {
+      "button": "Lägg till via URL",
+      "title": "Lägg till en grupp via URL",
+      "description": "Om en grupp har delats med dig kan du klistra in dess URL här för att lägga till den i din lista.",
+      "error": "Oj, vi kunde inte hitta gruppen från den URL du angav…"
+    },
+    "NotFound": {
+      "text": "Den här gruppen finns inte.",
+      "link": "Gå till nyligen besökta grupper"
+    }
+  },
+  "GroupForm": {
+    "title": "Gruppinformation",
+    "NameField": {
+      "label": "Gruppnamn",
+      "placeholder": "Sommarsemester",
+      "description": "Ange ett namn för din grupp."
+    },
+    "InformationField": {
+      "label": "Gruppinformation",
+      "placeholder": "Vilken information är relevant för gruppdeltagarna?"
+    },
+    "CurrencyField": {
+      "label": "Valutasymbol",
+      "placeholder": "kr, €, £…",
+      "description": "Vi använder den för att visa belopp."
+    },
+    "CurrencyCodeField": {
+      "label": "Huvudvaluta",
+      "createDescription": "Alla belopp och saldon kommer att anges i denna valuta.",
+      "editDescription": "Alla belopp och saldon kommer att anges i denna valuta. Att ändra detta kommer INTE att konvertera redan inmatade utgifter, förutom när valutan har olika \"underenheter\" än den nuvarande (t.ex. byte från US-dollar till japansk yen)",
+      "customOption": "Anpassad"
+    },
+    "Participants": {
+      "title": "Deltagare",
+      "description": "Ange ett namn för varje deltagare.",
+      "protectedParticipant": "Den här deltagaren ingår i utgifter och kan inte tas bort.",
+      "new": "Ny",
+      "add": "Lägg till deltagare",
+      "John": "Johan",
+      "Jane": "Anna",
+      "Jack": "Erik"
+    },
+    "Settings": {
+      "title": "Lokala inställningar",
+      "description": "Dessa inställningar gäller per enhet och används för att anpassa din upplevelse.",
+      "ActiveUserField": {
+        "label": "Aktiv användare",
+        "placeholder": "Välj en deltagare",
+        "none": "Ingen",
+        "description": "Användare som används som standard för att betala utgifter."
+      },
+      "save": "Spara",
+      "saving": "Sparar…",
+      "create": "Skapa",
+      "creating": "Skapar…",
+      "cancel": "Avbryt"
+    }
+  },
+  "ExpenseForm": {
+    "Income": {
+      "create": "Skapa inkomst",
+      "edit": "Redigera inkomst",
+      "TitleField": {
+        "label": "Inkomsttitel",
+        "placeholder": "Måndagskvällens restaurang",
+        "description": "Ange en beskrivning för inkomsten."
+      },
+      "DateField": {
+        "label": "Inkomstdatum",
+        "description": "Ange det datum då inkomsten mottogs."
+      },
+      "currencyField": {
+        "label": "Valuta för inkomst",
+        "description": "Valutan i vilken inkomsten mottogs."
+      },
+      "categoryFieldDescription": "Välj inkomstkategori.",
+      "paidByField": {
+        "label": "Mottagen av",
+        "description": "Välj den deltagare som tog emot inkomsten."
+      },
+      "paidFor": {
+        "title": "Mottagen för",
+        "description": "Välj vem inkomsten mottogs för."
+      },
+      "splitModeDescription": "Välj hur inkomsten ska delas.",
+      "attachDescription": "Se och bifoga kvitton till inkomsten."
+    },
+    "Expense": {
+      "create": "Skapa utgift",
+      "edit": "Redigera utgift",
+      "TitleField": {
+        "label": "Utgiftstitel",
+        "placeholder": "Måndagskvällens restaurang",
+        "description": "Ange en beskrivning för utgiften."
+      },
+      "DateField": {
+        "label": "Utgiftsdatum",
+        "description": "Ange det datum då utgiften betalades."
+      },
+      "currencyField": {
+        "label": "Valuta för utgift",
+        "description": "Valutan i vilken utgiften betalades."
+      },
+      "categoryFieldDescription": "Välj utgiftskategori.",
+      "paidByField": {
+        "label": "Betald av",
+        "placeholder": "Välj en deltagare",
+        "description": "Välj den deltagare som betalade utgiften."
+      },
+      "recurrenceRule": {
+        "label": "Upprepning av utgift",
+        "description": "Välj hur ofta utgiften ska upprepas.",
+
+        "none": "Ingen",
+        "daily": "Dagligen",
+        "weekly": "Veckovis",
+        "monthly": "Månadsvis"
+      },
+      "paidFor": {
+        "title": "Betald för",
+        "description": "Välj vem utgiften betalades för."
+      },
+      "splitModeDescription": "Välj hur utgiften ska delas.",
+      "attachDescription": "Se och bifoga kvitton till utgiften."
+    },
+    "amountField": {
+      "label": "Belopp"
+    },
+    "conversionUnavailable": "För att ange en annan valuta per utgift och konvertera belopp, välj en icke-anpassad valuta för gruppen.",
+    "originalAmountField": {
+      "label": "Belopp att konvertera"
+    },
+    "conversionRateField": {
+      "useApi": "Använd kurser från Frankfurter",
+      "useCustom": "Använd anpassad kurs",
+      "label": "Växelkurs"
+    },
+    "conversionRateState": {
+      "loading": "Hämtar växelkurser…",
+      "success": "Hämtade kurser:",
+      "error": "Oj, vi kunde inte hämta de senaste kurserna.",
+      "staleRate": "Använder kurs:",
+      "noRate": "Ange en anpassad kurs nedan.",
+      "currencyNotFound": "Oj, Frankfurter har inte kursen för denna valuta det här datumet.",
+      "noDate": "Ange utgiftsdatumet för att hämta en växelkurs.",
+      "dateMismatch": "Kurser från datum: {date}",
+      "refresh": "Uppdatera",
+      "customRate": "Använder anpassad kurs"
+    },
+    "isReimbursementField": {
+      "label": "Detta är en återbetalning"
+    },
+    "categoryField": {
+      "label": "Kategori"
+    },
+    "notesField": {
+      "label": "Anteckningar"
+    },
+    "selectNone": "Välj ingen",
+    "selectAll": "Välj alla",
+    "shares": "andel(ar)",
+    "advancedOptions": "Avancerade delningsalternativ…",
+    "SplitModeField": {
+      "label": "Delningsläge",
+      "evenly": "Jämnt",
+      "byShares": "Ojämnt – Efter andelar",
+      "byPercentage": "Ojämnt – Efter procent",
+      "byAmount": "Ojämnt – Efter belopp",
+      "saveAsDefault": "Spara som standard delningsalternativ"
+    },
+    "DeletePopup": {
+      "label": "Ta bort",
+      "title": "Ta bort den här utgiften?",
+      "description": "Vill du verkligen ta bort den här utgiften? Denna åtgärd kan inte ångras.",
+      "yes": "Ja",
+      "cancel": "Avbryt"
+    },
+    "attachDocuments": "Bifoga dokument",
+    "create": "Skapa",
+    "creating": "Skapar…",
+    "save": "Spara",
+    "saving": "Sparar…",
+    "cancel": "Avbryt",
+    "reimbursement": "Återbetalning"
+  },
+  "ExpenseDocumentsInput": {
+    "TooBigToast": {
+      "title": "Filen är för stor",
+      "description": "Den maximala filstorleken du kan ladda upp är {maxSize}. Din är {size}."
+    },
+    "ErrorToast": {
+      "title": "Fel vid uppladdning av dokument",
+      "description": "Något gick fel vid uppladdningen av dokumentet. Försök igen senare eller välj en annan fil.",
+      "retry": "Försök igen"
+    }
+  },
+  "CreateFromReceipt": {
+    "Dialog": {
+      "triggerTitle": "Skapa utgift från kvitto",
+      "title": "Skapa från kvitto",
+      "description": "Extrahera utgiftsinformation från ett kvittofoto.",
+      "body": "Ladda upp ett foto av ett kvitto så skannar vi det för att extrahera utgiftsinformationen om vi kan.",
+      "selectImage": "Välj bild…",
+      "titleLabel": "Titel:",
+      "categoryLabel": "Kategori:",
+      "amountLabel": "Belopp:",
+      "dateLabel": "Datum:",
+      "editNext": "Du kan redigera utgiftsinformationen i nästa steg.",
+      "continue": "Fortsätt"
+    },
+    "unknown": "Okänt",
+    "TooBigToast": {
+      "title": "Filen är för stor",
+      "description": "Den maximala filstorleken du kan ladda upp är {maxSize}. Din är {size}."
+    },
+    "ErrorToast": {
+      "title": "Fel vid uppladdning av dokument",
+      "description": "Något gick fel vid uppladdningen av dokumentet. Försök igen senare eller välj en annan fil.",
+      "retry": "Försök igen"
+    }
+  },
+  "Balances": {
+    "title": "Saldon",
+    "description": "Det här är det belopp som varje deltagare har betalat eller fått betalt för.",
+    "Reimbursements": {
+      "title": "Föreslagna återbetalningar",
+      "description": "Här är förslag på optimerade återbetalningar mellan deltagarna.",
+      "noImbursements": "Det verkar som att din grupp inte behöver några återbetalningar 😁",
+      "owes": "<strong>{from}</strong> är skyldig <strong>{to}</strong>",
+      "markAsPaid": "Markera som betald"
+    }
+  },
+  "Stats": {
+    "title": "Statistik",
+    "Totals": {
+      "title": "Totaler",
+      "description": "Utgiftssammanfattning för hela gruppen.",
+      "groupSpendings": "Totala gruppens utgifter",
+      "groupEarnings": "Totala gruppens inkomster",
+      "yourSpendings": "Dina totala utgifter",
+      "yourEarnings": "Dina totala inkomster",
+      "yourShare": "Din totala andel"
+    }
+  },
+  "Activity": {
+    "title": "Aktivitet",
+    "description": "Översikt över all aktivitet i den här gruppen.",
+    "noActivity": "Det finns ännu ingen aktivitet i din grupp.",
+    "someone": "Någon",
+    "settingsModified": "Gruppinställningarna ändrades av <strong>{participant}</strong>.",
+    "expenseCreated": "Utgiften <em>{expense}</em> skapades av <strong>{participant}</strong>.",
+    "expenseUpdated": "Utgiften <em>{expense}</em> uppdaterades av <strong>{participant}</strong>.",
+    "expenseDeleted": "Utgiften <em>{expense}</em> togs bort av <strong>{participant}</strong>.",
+    "Groups": {
+      "today": "Idag",
+      "yesterday": "Igår",
+      "earlierThisWeek": "Tidigare den här veckan",
+      "lastWeek": "Förra veckan",
+      "earlierThisMonth": "Tidigare denna månad",
+      "lastMonth": "Förra månaden",
+      "earlierThisYear": "Tidigare i år",
+      "lastYear": "Förra året",
+      "older": "Äldre"
+    }
+  },
+  "Information": {
+    "title": "Information",
+    "description": "Använd den här platsen för att lägga till information som kan vara relevant för gruppdeltagarna.",
+    "empty": "Ingen gruppinformation ännu."
+  },
+  "Settings": {
+    "title": "Inställningar"
+  },
+  "Share": {
+    "title": "Dela",
+    "description": "För att andra deltagare ska kunna se gruppen och lägga till utgifter, dela dess URL med dem.",
+    "warning": "Varning!",
+    "warningHelp": "Varje person med gruppens URL kan se och redigera utgifter. Dela med försiktighet!"
+  },
+  "SchemaErrors": {
+    "min1": "Ange minst ett tecken.",
+    "min2": "Ange minst två tecken.",
+    "max5": "Ange högst fem tecken.",
+    "max50": "Ange högst 50 tecken.",
+    "duplicateParticipantName": "En annan deltagare har redan det här namnet.",
+    "titleRequired": "Ange en titel.",
+    "invalidNumber": "Ogiltigt nummer.",
+    "amountRequired": "Du måste ange ett belopp.",
+    "amountNotZero": "Beloppet får inte vara noll.",
+    "amountTenMillion": "Beloppet måste vara lägre än 10 000 000.",
+    "ratePositive": "Kursen måste vara strikt större än noll.",
+    "paidByRequired": "Du måste välja en deltagare.",
+    "paidForMin1": "Utgiften måste betalas för minst en deltagare.",
+    "noZeroShares": "Alla andelar måste vara högre än 0.",
+    "amountSum": "Summan av beloppen måste vara lika med utgiftsbeloppet.",
+    "percentageSum": "Summan av procentsatserna måste vara 100."
+  },
+  "Categories": {
+    "search": "Sök kategori...",
+    "noCategory": "Ingen kategori hittades.",
+    "Uncategorized": {
+      "heading": "Okategoriserat",
+      "General": "Allmänt",
+      "Payment": "Betalning"
+    },
+    "Entertainment": {
+      "heading": "Underhållning",
+      "Entertainment": "Underhållning",
+      "Games": "Spel",
+      "Movies": "Film",
+      "Music": "Musik",
+      "Sports": "Sport"
+    },
+    "Food and Drink": {
+      "heading": "Mat och dryck",
+      "Food and Drink": "Mat och dryck",
+      "Dining Out": "Restaurang",
+      "Groceries": "Matvaror",
+      "Liquor": "Alkohol"
+    },
+    "Home": {
+      "heading": "Hem",
+      "Home": "Hem",
+      "Electronics": "Elektronik",
+      "Furniture": "Möbler",
+      "Household Supplies": "Hushållsartiklar",
+      "Maintenance": "Underhåll",
+      "Mortgage": "Bolån",
+      "Pets": "Husdjur",
+      "Rent": "Hyra",
+      "Services": "Tjänster"
+    },
+    "Life": {
+      "heading": "Liv",
+      "Childcare": "Barnomsorg",
+      "Clothing": "Kläder",
+      "Donation": "Donation",
+      "Education": "Utbildning",
+      "Gifts": "Presenter",
+      "Insurance": "Försäkring",
+      "Medical Expenses": "Sjukvårdskostnader",
+      "Taxes": "Skatter"
+    },
+    "Transportation": {
+      "heading": "Transport",
+      "Transportation": "Transport",
+      "Bicycle": "Cykel",
+      "Bus/Train": "Buss/Tåg",
+      "Car": "Bil",
+      "Gas/Fuel": "Bensin/Bränsle",
+      "Hotel": "Hotell",
+      "Parking": "Parkering",
+      "Plane": "Flyg",
+      "Taxi": "Taxi"
+    },
+    "Utilities": {
+      "heading": "Hushållstjänster",
+      "Utilities": "Hushållstjänster",
+      "Cleaning": "Städning",
+      "Electricity": "El",
+      "Heat/Gas": "Värme/Gas",
+      "Trash": "Sopor",
+      "TV/Phone/Internet": "TV/Telefon/Internet",
+      "Water": "Vatten"
+    }
+  },
+  "Currencies": {
+    "search": "Sök valuta...",
+    "noCurrency": "Inga valutor hittades.",
+    "custom": {
+      "heading": "Anpassad"
+    },
+    "common": {
+      "heading": "Vanligaste"
+    },
+    "other": {
+      "heading": "Övriga valutor"
+    }
+  }
+}
