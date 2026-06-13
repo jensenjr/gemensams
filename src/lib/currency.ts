@@ -62,7 +62,9 @@ export function defaultCurrencyList(
         },
       ]
     : []
-  const allCurrencies = currencyList[locale]
+  const allCurrencies =
+    (currencyList as Record<string, Record<string, Currency>>)[locale] ??
+    currencyList['en-US']
   return currencies.concat(Object.values(allCurrencies))
 }
 
@@ -81,7 +83,9 @@ export function getCurrency(
     decimal_digits: 2,
   }
   if (!currencyCode || currencyCode === '') return defaultCurrency
-  const currencyListInLocale = currencyList[locale] ?? currencyList['en-US']
+  const currencyListInLocale =
+    (currencyList as Record<string, Record<string, Currency>>)[locale] ??
+    currencyList['en-US']
   return (
     currencyListInLocale[currencyCode as supportedCurrencyCodeType] ??
     defaultCurrency
