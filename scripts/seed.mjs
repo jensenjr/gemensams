@@ -9,7 +9,7 @@ const GROUP_ID = 'hushallet'
 const GROUP_NAME = 'Hushållet'
 const CURRENCY_CODE = 'SEK'
 const CURRENCY_SYMBOL = 'kr'
-const PARTICIPANTS = ['Christian', 'Fru', 'Övriga']
+const PARTICIPANTS = ['Användare 1', 'Användare 2']
 
 async function main() {
   const existing = await prisma.group.findUnique({

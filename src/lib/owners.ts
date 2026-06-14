@@ -4,27 +4,20 @@
  * "Owner" is pure sugar over Spliit's paidFor + splitMode fields.
  * No DB schema changes — the mapping is applied at form submission time.
  *
- * Owner → paidFor mapping (all shares = 1, splitMode = EVENLY):
- *   hans       → [Christian]
- *   hennes     → [Fru]
- *   gemensamt  → [Christian, Fru]
- *   ovrigt     → [Övriga]
+ * Owner is either a participant id (string) or the literal 'gemensamt'.
  *
- * Participants are resolved by name (case-insensitive) with order-based fallback:
- *   index 0 → hans, index 1 → hennes, index 2 → ovrigt
+ * Owner → paidFor mapping (all shares = 1, splitMode = EVENLY):
+ *   participantId  → paidFor = [that participant], EVENLY
+ *   'gemensamt'    → paidFor = [all participants], EVENLY
  */
 
 import { SplitMode } from '@prisma/client'
 
-export type Owner = 'hans' | 'hennes' | 'gemensamt' | 'ovrigt'
+/** An owner is either a participant id or the shared sentinel. */
+export type Owner = string
 
-/** Ordered list of owners with their i18n label keys */
-export const OWNERS: readonly { key: Owner; labelKey: string }[] = [
-  { key: 'hans', labelKey: 'Owners.hans' },
-  { key: 'hennes', labelKey: 'Owners.hennes' },
-  { key: 'gemensamt', labelKey: 'Owners.gemensamt' },
-  { key: 'ovrigt', labelKey: 'Owners.ovrigt' },
-] as const
+/** The sentinel value for "shared / all participants". */
+export const GEMENSAMT = 'gemensamt'
 
 /** Minimal participant shape (subset of group.participants) */
 export interface OwnerParticipant {
@@ -38,60 +31,57 @@ export interface OwnerSplit {
   splitMode: SplitMode
 }
 
-// Name constants (case-insensitive matching)
-const NAME_HANS = 'christian'
-const NAME_HENNES = 'fru'
-const NAME_OVRIGT = 'övriga'
-
-function findParticipant(
-  participants: OwnerParticipant[],
-  name: string,
-  fallbackIndex: number,
-): OwnerParticipant | undefined {
-  return (
-    participants.find((p) => p.name.toLowerCase() === name) ??
-    participants[fallbackIndex]
-  )
+/** One entry in the owner-bar option list */
+export interface OwnerOption {
+  id: string
+  name: string
 }
 
 /**
- * Resolve an Owner key to paidFor + splitMode.
- * Returns an empty paidFor array if no participants can be found (defensive).
+ * Returns the ordered list of owner-bar options for a group:
+ * one entry per participant, followed by a 'gemensamt' entry.
+ *
+ * @param participants  The group's participants.
+ * @param gemensamtLabel  Display label for the shared option (from i18n).
+ */
+export function ownerOptions(
+  participants: OwnerParticipant[],
+  gemensamtLabel: string,
+): OwnerOption[] {
+  return [
+    ...participants.map((p) => ({ id: p.id, name: p.name })),
+    { id: GEMENSAMT, name: gemensamtLabel },
+  ]
+}
+
+/**
+ * Resolve an Owner value to paidFor + splitMode.
+ *
+ * - owner === GEMENSAMT  → all participants, EVENLY
+ * - owner is a participant id → just that participant, EVENLY
+ *   (if the id is not found in participants, falls back gracefully to
+ *    first participant; returns empty array only when participants is empty)
  */
 export function ownerToSplit(
   participants: OwnerParticipant[],
   owner: Owner,
 ): OwnerSplit {
-  const hans = findParticipant(participants, NAME_HANS, 0)
-  const hennes = findParticipant(participants, NAME_HENNES, 1)
-  const ovrigt = findParticipant(participants, NAME_OVRIGT, 2)
+  const toEntry = (p: OwnerParticipant) => ({
+    participant: p.id,
+    shares: '1',
+  })
 
-  const toEntry = (p: OwnerParticipant | undefined) =>
-    p ? { participant: p.id, shares: '1' } : null
-
-  let entries: ({ participant: string; shares: string } | null)[]
-
-  switch (owner) {
-    case 'hans':
-      entries = [toEntry(hans)]
-      break
-    case 'hennes':
-      entries = [toEntry(hennes)]
-      break
-    case 'gemensamt':
-      entries = [toEntry(hans), toEntry(hennes)]
-      break
-    case 'ovrigt':
-      entries = [toEntry(ovrigt)]
-      break
-    default:
-      entries = [toEntry(hans)]
+  if (owner === GEMENSAMT) {
+    return {
+      paidFor: participants.map(toEntry),
+      splitMode: 'EVENLY' as SplitMode,
+    }
   }
 
+  // owner is a participant id
+  const found = participants.find((p) => p.id === owner) ?? participants[0]
   return {
-    paidFor: entries.filter(
-      (e): e is { participant: string; shares: string } => e !== null,
-    ),
+    paidFor: found ? [toEntry(found)] : [],
     splitMode: 'EVENLY' as SplitMode,
   }
 }
@@ -100,30 +90,22 @@ export function ownerToSplit(
  * Derive the Owner for an existing expense from its paidFor participant IDs.
  * Used to pre-fill owner buttons on the edit form.
  *
- * Matching logic:
- *   {Christian}        → hans
- *   {Fru}              → hennes
- *   {Christian, Fru}   → gemensamt  (in any order)
- *   anything else      → ovrigt
+ * - Exactly one paidFor id that matches a participant → that participant's id
+ * - Everything else (multiple, all, none matching) → GEMENSAMT
  */
 export function ownerFromExpense(
   participants: OwnerParticipant[],
   paidForParticipantIds: string[],
 ): Owner {
   if (!paidForParticipantIds || paidForParticipantIds.length === 0) {
-    return 'ovrigt'
+    return GEMENSAMT
   }
 
-  const hans = findParticipant(participants, NAME_HANS, 0)
-  const hennes = findParticipant(participants, NAME_HENNES, 1)
+  if (paidForParticipantIds.length === 1) {
+    const id = paidForParticipantIds[0]
+    const found = participants.find((p) => p.id === id)
+    if (found) return found.id
+  }
 
-  const ids = new Set(paidForParticipantIds)
-
-  const hasHans = hans ? ids.has(hans.id) : false
-  const hasHennes = hennes ? ids.has(hennes.id) : false
-
-  if (ids.size === 1 && hasHans) return 'hans'
-  if (ids.size === 1 && hasHennes) return 'hennes'
-  if (ids.size === 2 && hasHans && hasHennes) return 'gemensamt'
-  return 'ovrigt'
+  return GEMENSAMT
 }

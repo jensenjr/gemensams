@@ -130,10 +130,7 @@
   },
   "Owners": {
     "label": "Ägare",
-    "hans": "Hans",
-    "hennes": "Hennes",
     "gemensamt": "Gemensamt",
-    "ovrigt": "Övrigt",
     "advancedSection": "Fler alternativ",
     "saveAndNew": "Spara och ny"
   },

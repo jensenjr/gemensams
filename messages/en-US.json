@@ -130,10 +130,7 @@
   },
   "Owners": {
     "label": "Owner",
-    "hans": "Hans",
-    "hennes": "Hennes",
-    "gemensamt": "Gemensamt",
-    "ovrigt": "Övrigt",
+    "gemensamt": "Shared",
     "advancedSection": "More options",
     "saveAndNew": "Save and new"
   },

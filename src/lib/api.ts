@@ -1,4 +1,4 @@
-import { Owner, ownerFromExpense } from '@/lib/owners'
+import { GEMENSAMT, Owner, ownerFromExpense } from '@/lib/owners'
 import { prisma } from '@/lib/prisma'
 import { ExpenseFormValues, GroupFormValues } from '@/lib/schemas'
 import {
@@ -689,7 +689,11 @@ function deriveOwner(
 // spendByOwner
 // ---------------------------------------------------------------------------
 
-export type OwnerTotals = Record<Owner, number> & { grandTotal: number }
+/**
+ * Per-owner spend totals.
+ * Keys are participant ids or GEMENSAMT, plus 'grandTotal'.
+ */
+export type OwnerTotals = { [owner: string]: number; grandTotal: number }
 
 export interface SpendByOwnerFilters {
   /** Inclusive start date (UTC day boundary). Absent = all time. */
@@ -698,7 +702,7 @@ export interface SpendByOwnerFilters {
   to?: Date
   /** Filter by category id */
   categoryId?: number
-  /** Filter by owner */
+  /** Filter by owner (participant id or 'gemensamt') */
   owner?: Owner
 }
 
@@ -706,6 +710,8 @@ export interface SpendByOwnerFilters {
  * Returns total spending per owner + grand total over the filtered range.
  * Amounts are integers in minor units (öre for SEK).
  * Reimbursements are excluded.
+ *
+ * Owner keys are participant ids or GEMENSAMT ('gemensamt').
  */
 export async function spendByOwner(
   groupId: string,
@@ -716,13 +722,10 @@ export async function spendByOwner(
 
   const expenses = await getAttributableExpenses(groupId)
 
-  const totals: OwnerTotals = {
-    hans: 0,
-    hennes: 0,
-    gemensamt: 0,
-    ovrigt: 0,
-    grandTotal: 0,
-  }
+  // Seed totals for all participants + gemensamt
+  const totals: OwnerTotals = { grandTotal: 0 }
+  for (const p of group.participants) totals[p.id] = 0
+  totals[GEMENSAMT] = 0
 
   for (const expense of expenses) {
     if (expense.isReimbursement) continue
@@ -749,7 +752,7 @@ export async function spendByOwner(
     // Owner filter
     if (filters.owner !== undefined && owner !== filters.owner) continue
 
-    totals[owner] += expense.amount
+    totals[owner] = (totals[owner] ?? 0) + expense.amount
     totals.grandTotal += expense.amount
   }
 
@@ -824,12 +827,14 @@ export type DaySpend = {
   /** ISO date string YYYY-MM-DD */
   date: string
   total: number
-  perOwner: Record<Owner, number>
+  /** Keys are participant ids or 'gemensamt' */
+  perOwner: Record<string, number>
 }
 
 /**
  * Returns daily spending totals (and per-owner breakdown) over a date range.
  * Reimbursements are excluded.
+ * perOwner keys are participant ids or GEMENSAMT.
  */
 export async function spendByDay(
   groupId: string,
@@ -841,6 +846,13 @@ export async function spendByDay(
   const expenses = await getAttributableExpenses(groupId)
 
   const map = new Map<string, DaySpend>()
+
+  // Build a zeroed perOwner seed for each day entry
+  const seedPerOwner = (): Record<string, number> => {
+    const obj: Record<string, number> = { [GEMENSAMT]: 0 }
+    for (const p of group.participants) obj[p.id] = 0
+    return obj
+  }
 
   for (const expense of expenses) {
     if (expense.isReimbursement) continue
@@ -865,12 +877,12 @@ export async function spendByDay(
       map.set(dateStr, {
         date: dateStr,
         total: 0,
-        perOwner: { hans: 0, hennes: 0, gemensamt: 0, ovrigt: 0 },
+        perOwner: seedPerOwner(),
       })
     }
     const entry = map.get(dateStr)!
     entry.total += expense.amount
-    entry.perOwner[owner] += expense.amount
+    entry.perOwner[owner] = (entry.perOwner[owner] ?? 0) + expense.amount
   }
 
   // Return sorted by date

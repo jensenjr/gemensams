@@ -39,9 +39,10 @@ import { defaultCurrencyList, getCurrency } from '@/lib/currency'
 import { RuntimeFeatureFlags } from '@/lib/featureFlags'
 import { useActiveUser, useCurrencyRate } from '@/lib/hooks'
 import {
+  GEMENSAMT,
   Owner,
-  OWNERS,
   ownerFromExpense,
+  ownerOptions,
   ownerToSplit,
 } from '@/lib/owners'
 import {
@@ -175,13 +176,13 @@ export function ExpenseForm({
   const isCreate = expense === undefined
   const searchParams = useSearchParams()
 
-  // Derive initial owner from existing expense (edit) or default to 'hans' (create)
+  // Derive initial owner from existing expense (edit) or default to first participant (create)
   const initialOwner: Owner = expense
     ? ownerFromExpense(
         group.participants,
         expense.paidFor.map((pf) => pf.participantId),
       )
-    : 'hans'
+    : (group.participants[0]?.id ?? GEMENSAMT)
 
   const [selectedOwner, setSelectedOwner] = useState<Owner>(initialOwner)
 
@@ -513,17 +514,19 @@ export function ExpenseForm({
             <div className="col-span-2">
               <p className="text-sm font-medium mb-2">{tOwners('label')}</p>
               <div className="flex flex-wrap gap-2">
-                {OWNERS.map(({ key }) => (
-                  <Button
-                    key={key}
-                    type="button"
-                    variant={selectedOwner === key ? 'default' : 'outline'}
-                    className="flex-1 min-w-[80px] text-base py-5"
-                    onClick={() => applyOwner(key)}
-                  >
-                    {tOwners(key)}
-                  </Button>
-                ))}
+                {ownerOptions(group.participants, tOwners('gemensamt')).map(
+                  ({ id, name }) => (
+                    <Button
+                      key={id}
+                      type="button"
+                      variant={selectedOwner === id ? 'default' : 'outline'}
+                      className="flex-1 min-w-[80px] text-base py-5"
+                      onClick={() => applyOwner(id)}
+                    >
+                      {name}
+                    </Button>
+                  ),
+                )}
               </div>
             </div>
 

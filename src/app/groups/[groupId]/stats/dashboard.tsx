@@ -19,8 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
-import { OWNER_BG_COLORS, OWNER_COLORS } from '@/lib/owner-colors'
-import { Owner, OWNERS } from '@/lib/owners'
+import { bgColorForOwner, colorForOwner } from '@/lib/owner-colors'
+import { GEMENSAMT, Owner, OwnerParticipant, ownerOptions } from '@/lib/owners'
 import { formatCurrency, getCurrencyFromGroup } from '@/lib/utils'
 import { trpc } from '@/trpc/client'
 import dayjs from 'dayjs'
@@ -83,13 +83,15 @@ function presetRange(preset: RangePreset): { from: string; to: string } {
 function OwnerBadge({
   owner,
   label,
+  participants,
 }: {
-  owner: Owner
+  owner: string
   label: string
+  participants: OwnerParticipant[]
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${OWNER_BG_COLORS[owner]}`}
+      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${bgColorForOwner(owner, participants)}`}
     >
       {label}
     </span>
@@ -103,17 +105,21 @@ function OwnerBadge({
 type DayBar = {
   date: string
   total: number
-  perOwner: Record<Owner, number>
+  perOwner: Record<string, number>
 }
 
 function SpendChart({
   data,
   onClickDay,
   selectedDay,
+  participants,
+  ownerList,
 }: {
   data: DayBar[]
   onClickDay: (date: string) => void
   selectedDay: string | null
+  participants: OwnerParticipant[]
+  ownerList: { id: string; name: string }[]
 }) {
   const maxTotal = Math.max(...data.map((d) => d.total), 1)
   const CHART_HEIGHT = 120
@@ -130,20 +136,22 @@ function SpendChart({
     for (const d of data) {
       const key = d.date.slice(0, 7)
       if (!grouped.has(key)) {
+        const seedPerOwner: Record<string, number> = {}
+        for (const o of ownerList) seedPerOwner[o.id] = 0
         grouped.set(key, {
           date: key,
           total: 0,
-          perOwner: { hans: 0, hennes: 0, gemensamt: 0, ovrigt: 0 },
+          perOwner: seedPerOwner,
         })
       }
       const entry = grouped.get(key)!
       entry.total += d.total
-      for (const o of OWNERS) {
-        entry.perOwner[o.key] += d.perOwner[o.key]
+      for (const o of ownerList) {
+        entry.perOwner[o.id] = (entry.perOwner[o.id] ?? 0) + (d.perOwner[o.id] ?? 0)
       }
     }
     return Array.from(grouped.values())
-  }, [data, tooManyDays])
+  }, [data, tooManyDays, ownerList])
 
   if (displayData.length === 0) return null
 
@@ -184,8 +192,8 @@ function SpendChart({
                   />
                 )}
                 {/* Stacked owner segments */}
-                {OWNERS.map(({ key: owner }) => {
-                  const val = d.perOwner[owner]
+                {ownerList.map(({ id: owner }) => {
+                  const val = d.perOwner[owner] ?? 0
                   if (val <= 0) return null
                   const barH = Math.max(2, Math.round((val / maxTotal) * CHART_HEIGHT))
                   stackY -= barH
@@ -196,7 +204,7 @@ function SpendChart({
                       y={stackY}
                       width={barWidth}
                       height={barH}
-                      fill={OWNER_COLORS[owner]}
+                      fill={colorForOwner(owner, participants)}
                       opacity={isSelected ? 1 : 0.85}
                     />
                   )
@@ -231,13 +239,16 @@ function DayDetail({
   groupId,
   date,
   onClose,
+  participants,
+  ownerLabel,
 }: {
   groupId: string
   date: string
   onClose: () => void
+  participants: OwnerParticipant[]
+  ownerLabel: (owner: string) => string
 }) {
   const t = useTranslations('Stats.Dashboard')
-  const tOwners = useTranslations('Owners')
   const locale = useLocale()
   const { group } = useCurrentGroup()
   const currency = group ? getCurrencyFromGroup(group) : null
@@ -248,13 +259,13 @@ function DayDetail({
   })
 
   const perOwner = useMemo(() => {
-    if (!data) return {} as Record<Owner, number>
+    if (!data) return {} as Record<string, number>
     return data.reduce(
       (acc, e) => {
         if (!e.isReimbursement) acc[e.owner] = (acc[e.owner] ?? 0) + e.amount
         return acc
       },
-      {} as Record<Owner, number>,
+      {} as Record<string, number>,
     )
   }, [data])
 
@@ -267,6 +278,12 @@ function DayDetail({
     (amount: number) =>
       currency ? formatCurrency(currency, amount, locale) : String(amount),
     [currency, locale],
+  )
+
+  // Collect distinct owners from day data for breakdown
+  const dayOwners = useMemo(
+    () => Object.keys(perOwner).filter((o) => (perOwner[o] ?? 0) > 0),
+    [perOwner],
   )
 
   return (
@@ -301,7 +318,8 @@ function DayDetail({
                   <div className="flex items-center gap-2 min-w-0">
                     <OwnerBadge
                       owner={e.owner}
-                      label={tOwners(e.owner as Parameters<typeof tOwners>[0])}
+                      label={ownerLabel(e.owner)}
+                      participants={participants}
                     />
                     <span className="truncate text-muted-foreground text-xs">
                       {e.category?.name ?? '–'}
@@ -322,14 +340,14 @@ function DayDetail({
                 {t('dayOwnerBreakdown')}
               </div>
               <div className="space-y-1">
-                {OWNERS.map(({ key: owner }) => {
+                {dayOwners.map((owner) => {
                   const amt = perOwner[owner] ?? 0
-                  if (amt === 0) return null
                   return (
                     <div key={owner} className="flex items-center justify-between text-sm">
                       <OwnerBadge
                         owner={owner}
-                        label={tOwners(owner as Parameters<typeof tOwners>[0])}
+                        label={ownerLabel(owner)}
+                        participants={participants}
                       />
                       <span className="tabular-nums">{fmt(amt)}</span>
                     </div>
@@ -358,15 +376,20 @@ function OwnerBreakdown({
   to,
   categoryId,
   owner: ownerFilter,
+  participants,
+  ownerList,
+  ownerLabel,
 }: {
   groupId: string
   from: string
   to: string
   categoryId?: number
-  owner?: Owner
+  owner?: string
+  participants: OwnerParticipant[]
+  ownerList: { id: string; name: string }[]
+  ownerLabel: (owner: string) => string
 }) {
   const t = useTranslations('Stats.Dashboard')
-  const tOwners = useTranslations('Owners')
   const locale = useLocale()
   const { group } = useCurrentGroup()
   const currency = group ? getCurrencyFromGroup(group) : null
@@ -400,8 +423,8 @@ function OwnerBreakdown({
 
   return (
     <div className="space-y-2">
-      {OWNERS.map(({ key: owner }) => {
-        const amt = ownerAmounts[owner] ?? 0
+      {ownerList.map(({ id: owner }) => {
+        const amt = (ownerAmounts as Record<string, number>)[owner] ?? 0
         const pct = grandTotal > 0 ? ((amt / grandTotal) * 100).toFixed(1) : '0.0'
         const barPct = grandTotal > 0 ? (amt / grandTotal) * 100 : 0
 
@@ -410,7 +433,8 @@ function OwnerBreakdown({
             <div className="flex items-center justify-between text-sm">
               <OwnerBadge
                 owner={owner}
-                label={tOwners(owner as Parameters<typeof tOwners>[0])}
+                label={ownerLabel(owner)}
+                participants={participants}
               />
               <div className="flex items-center gap-2">
                 <span className="text-xs text-muted-foreground">{pct}%</span>
@@ -423,7 +447,7 @@ function OwnerBreakdown({
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${barPct}%`,
-                  backgroundColor: OWNER_COLORS[owner],
+                  backgroundColor: colorForOwner(owner, participants),
                 }}
               />
             </div>
@@ -442,17 +466,24 @@ function OwnerBreakdown({
 // Legend
 // ---------------------------------------------------------------------------
 
-function ChartLegend() {
-  const tOwners = useTranslations('Owners')
+function ChartLegend({
+  participants,
+  ownerList,
+  ownerLabel,
+}: {
+  participants: OwnerParticipant[]
+  ownerList: { id: string; name: string }[]
+  ownerLabel: (owner: string) => string
+}) {
   return (
     <div className="flex flex-wrap gap-3 text-xs">
-      {OWNERS.map(({ key: owner }) => (
+      {ownerList.map(({ id: owner }) => (
         <div key={owner} className="flex items-center gap-1">
           <span
             className="inline-block h-3 w-3 rounded-sm"
-            style={{ backgroundColor: OWNER_COLORS[owner] }}
+            style={{ backgroundColor: colorForOwner(owner, participants) }}
           />
-          <span>{tOwners(owner as Parameters<typeof tOwners>[0])}</span>
+          <span>{ownerLabel(owner)}</span>
         </div>
       ))}
     </div>
@@ -464,15 +495,34 @@ function ChartLegend() {
 // ---------------------------------------------------------------------------
 
 export function Dashboard() {
-  const { groupId } = useCurrentGroup()
+  const { groupId, group } = useCurrentGroup()
   const t = useTranslations('Stats.Dashboard')
   const tOwners = useTranslations('Owners')
+
+  // Participants from group context
+  const participants: OwnerParticipant[] = group?.participants ?? []
+
+  // Full owner list: participants + gemensamt
+  const allOwnerOptions = useMemo(
+    () => ownerOptions(participants, tOwners('gemensamt')),
+    [participants, tOwners],
+  )
+
+  // Helper: resolve owner id → display label
+  const ownerLabel = useCallback(
+    (owner: string): string => {
+      if (owner === GEMENSAMT) return tOwners('gemensamt')
+      const p = participants.find((p) => p.id === owner)
+      return p?.name ?? owner
+    },
+    [participants, tOwners],
+  )
 
   // Filters
   const [rangePreset, setRangePreset] = useState<RangePreset>('thisMonth')
   const [customFrom, setCustomFrom] = useState<string>('')
   const [customTo, setCustomTo] = useState<string>('')
-  const [ownerFilter, setOwnerFilter] = useState<Owner | 'all'>('all')
+  const [ownerFilter, setOwnerFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<number | undefined>(undefined)
   const [selectedDay, setSelectedDay] = useState<string | null>(null)
 
@@ -563,7 +613,7 @@ export function Dashboard() {
           <Select
             value={ownerFilter}
             onValueChange={(v) => {
-              setOwnerFilter(v as Owner | 'all')
+              setOwnerFilter(v)
               setSelectedDay(null)
             }}
           >
@@ -572,9 +622,9 @@ export function Dashboard() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t('filterOwnerAll')}</SelectItem>
-              {OWNERS.map(({ key: owner }) => (
-                <SelectItem key={owner} value={owner}>
-                  {tOwners(owner as Parameters<typeof tOwners>[0])}
+              {allOwnerOptions.map(({ id, name }) => (
+                <SelectItem key={id} value={id}>
+                  {name}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -606,7 +656,11 @@ export function Dashboard() {
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium">{t('chartTitle')}</span>
-            <ChartLegend />
+            <ChartLegend
+              participants={participants}
+              ownerList={allOwnerOptions}
+              ownerLabel={ownerLabel}
+            />
           </div>
 
           {chartLoading && (
@@ -632,6 +686,8 @@ export function Dashboard() {
               data={chartData}
               onClickDay={handleBarClick}
               selectedDay={selectedDay}
+              participants={participants}
+              ownerList={allOwnerOptions}
             />
           )}
         </div>
@@ -642,6 +698,8 @@ export function Dashboard() {
             groupId={groupId}
             date={selectedDay}
             onClose={() => setSelectedDay(null)}
+            participants={participants}
+            ownerLabel={ownerLabel}
           />
         )}
 
@@ -654,6 +712,9 @@ export function Dashboard() {
             to={to}
             categoryId={categoryFilter}
             owner={ownerArg}
+            participants={participants}
+            ownerList={allOwnerOptions}
+            ownerLabel={ownerLabel}
           />
         </div>
       </CardContent>
