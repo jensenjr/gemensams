@@ -39,6 +39,12 @@ import { defaultCurrencyList, getCurrency } from '@/lib/currency'
 import { RuntimeFeatureFlags } from '@/lib/featureFlags'
 import { useActiveUser, useCurrencyRate } from '@/lib/hooks'
 import {
+  Owner,
+  OWNERS,
+  ownerFromExpense,
+  ownerToSplit,
+} from '@/lib/owners'
+import {
   ExpenseFormValues,
   SplittingOptions,
   expenseFormSchema,
@@ -54,11 +60,11 @@ import {
 import { AppRouterOutput } from '@/trpc/routers/_app'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { RecurrenceRule } from '@prisma/client'
-import { ChevronRight, Save } from 'lucide-react'
+import { ChevronDown, ChevronRight, Save } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { match } from 'ts-pattern'
 import { DeletePopup } from '../../../../components/delete-popup'
@@ -164,9 +170,20 @@ export function ExpenseForm({
   runtimeFeatureFlags: RuntimeFeatureFlags
 }) {
   const t = useTranslations('ExpenseForm')
+  const tOwners = useTranslations('Owners')
   const locale = useLocale() as Locale
   const isCreate = expense === undefined
   const searchParams = useSearchParams()
+
+  // Derive initial owner from existing expense (edit) or default to 'hans' (create)
+  const initialOwner: Owner = expense
+    ? ownerFromExpense(
+        group.participants,
+        expense.paidFor.map((pf) => pf.participantId),
+      )
+    : 'hans'
+
+  const [selectedOwner, setSelectedOwner] = useState<Owner>(initialOwner)
 
   const getSelectedPayer = (field?: { value: string }) => {
     if (isCreate && typeof window !== 'undefined') {
@@ -183,6 +200,8 @@ export function ExpenseForm({
   }
   const defaultSplittingOptions = getDefaultSplittingOptions(group)
   const groupCurrency = getCurrencyFromGroup(group)
+  // For the owner-first fast path, compute the initial paidFor/splitMode from the default owner
+  const initialOwnerSplit = ownerToSplit(group.participants, initialOwner)
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseFormSchema),
     defaultValues: expense
@@ -248,11 +267,11 @@ export function ExpenseForm({
           category: searchParams.get('categoryId')
             ? Number(searchParams.get('categoryId'))
             : 0, // category with Id 0 is General
-          // paid for all, split evenly
-          paidFor: defaultSplittingOptions.paidFor,
+          // Owner-first fast path: default paidFor/splitMode from initial owner
+          paidFor: initialOwnerSplit.paidFor as any,
           paidBy: getSelectedPayer(),
           isReimbursement: false,
-          splitMode: defaultSplittingOptions.splitMode,
+          splitMode: initialOwnerSplit.splitMode,
           saveDefaultSplittingOptions: false,
           documents: searchParams.get('imageUrl')
             ? [
@@ -270,6 +289,24 @@ export function ExpenseForm({
   })
   const [isCategoryLoading, setCategoryLoading] = useState(false)
   const activeUserId = useActiveUser(group.id)
+
+  /** Apply an owner selection: sets paidFor + splitMode on the form */
+  const applyOwner = (owner: Owner) => {
+    const split = ownerToSplit(group.participants, owner)
+    form.setValue('paidFor', split.paidFor as any, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    })
+    form.setValue('splitMode', split.splitMode, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    })
+    setSelectedOwner(owner)
+  }
+
+  const saveAndNewRef = useRef(false)
 
   const submit = async (values: ExpenseFormValues) => {
     await persistDefaultSplittingOptions(group.id, values)
@@ -289,7 +326,30 @@ export function ExpenseForm({
       delete values.originalAmount
       delete values.originalCurrency
     }
-    return onSubmit(values, activeUserId ?? undefined)
+    await onSubmit(values, activeUserId ?? undefined)
+
+    // If "save and new" was requested, reset form to a fresh create state
+    if (saveAndNewRef.current && isCreate) {
+      saveAndNewRef.current = false
+      const freshSplit = ownerToSplit(group.participants, selectedOwner)
+      form.reset({
+        title: '',
+        expenseDate: new Date(),
+        amount: 0,
+        originalCurrency: group.currencyCode ?? undefined,
+        originalAmount: undefined,
+        conversionRate: undefined,
+        category: 0,
+        paidFor: freshSplit.paidFor as any,
+        paidBy: getSelectedPayer(),
+        isReimbursement: false,
+        splitMode: freshSplit.splitMode,
+        saveDefaultSplittingOptions: false,
+        documents: [],
+        notes: '',
+        recurrenceRule: RecurrenceRule.NONE,
+      })
+    }
   }
 
   const [isIncome, setIsIncome] = useState(Number(form.getValues().amount) < 0)
@@ -449,6 +509,24 @@ export function ExpenseForm({
             </CardTitle>
           </CardHeader>
           <CardContent className="grid sm:grid-cols-2 gap-6">
+            {/* Owner selector — the primary attribution control */}
+            <div className="col-span-2">
+              <p className="text-sm font-medium mb-2">{tOwners('label')}</p>
+              <div className="flex flex-wrap gap-2">
+                {OWNERS.map(({ key }) => (
+                  <Button
+                    key={key}
+                    type="button"
+                    variant={selectedOwner === key ? 'default' : 'outline'}
+                    className="flex-1 min-w-[80px] text-base py-5"
+                    onClick={() => applyOwner(key)}
+                  >
+                    {tOwners(key)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             <FormField
               control={form.control}
               name="title"
@@ -481,6 +559,16 @@ export function ExpenseForm({
               )}
             />
 
+            {/* ── Advanced / secondary fields ── */}
+            <Collapsible className="col-span-2">
+              <CollapsibleTrigger asChild>
+                <Button variant="link" className="-mx-4 text-muted-foreground">
+                  <ChevronDown className="w-4 h-4 mr-1" />
+                  {tOwners('advancedSection')}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="grid sm:grid-cols-2 gap-6 pt-2">
             <FormField
               control={form.control}
               name="expenseDate"
@@ -805,6 +893,9 @@ export function ExpenseForm({
                 </FormItem>
               )}
             />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </CardContent>
         </Card>
 
@@ -1264,11 +1355,22 @@ export function ExpenseForm({
           </Card>
         )}
 
-        <div className="flex mt-4 gap-2">
+        <div className="flex mt-4 gap-2 flex-wrap">
           <SubmitButton loadingContent={t(isCreate ? 'creating' : 'saving')}>
             <Save className="w-4 h-4 mr-2" />
             {t(isCreate ? 'create' : 'save')}
           </SubmitButton>
+          {isCreate && (
+            <SubmitButton
+              variant="outline"
+              loadingContent={t('creating')}
+              onClick={() => {
+                saveAndNewRef.current = true
+              }}
+            >
+              {tOwners('saveAndNew')}
+            </SubmitButton>
+          )}
           {!isCreate && onDelete && (
             <DeletePopup
               onDelete={() => onDelete(activeUserId ?? undefined)}

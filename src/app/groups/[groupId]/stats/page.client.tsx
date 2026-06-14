@@ -1,3 +1,4 @@
+import { Dashboard } from '@/app/groups/[groupId]/stats/dashboard'
 import { Totals } from '@/app/groups/[groupId]/stats/totals'
 import {
   Card,
@@ -13,6 +14,7 @@ export function TotalsPageClient() {
 
   return (
     <>
+      <Dashboard />
       <Card className="mb-4">
         <CardHeader>
           <CardTitle>{t('Totals.title')}</CardTitle>

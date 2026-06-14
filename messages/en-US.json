@@ -128,6 +128,15 @@
       "cancel": "Cancel"
     }
   },
+  "Owners": {
+    "label": "Owner",
+    "hans": "Hans",
+    "hennes": "Hennes",
+    "gemensamt": "Gemensamt",
+    "ovrigt": "Övrigt",
+    "advancedSection": "More options",
+    "saveAndNew": "Save and new"
+  },
   "ExpenseForm": {
     "Income": {
       "create": "Create income",
@@ -312,6 +321,31 @@
       "yourSpendings": "Your total spendings",
       "yourEarnings": "Your total earnings",
       "yourShare": "Your total share"
+    },
+    "Dashboard": {
+      "title": "Spending overview",
+      "description": "Where did the money go? Who spent what?",
+      "filterOwner": "Owner",
+      "filterOwnerAll": "All owners",
+      "filterCategory": "Category",
+      "filterCategoryAll": "All categories",
+      "filterRange": "Period",
+      "rangeThisMonth": "This month",
+      "rangeLastMonth": "Last month",
+      "rangeLast3Months": "Last 3 months",
+      "rangeThisYear": "This year",
+      "rangeCustom": "Custom",
+      "rangeFrom": "From",
+      "rangeTo": "To",
+      "chartTitle": "Spending per day",
+      "noData": "No expenses for the selected period.",
+      "ownerBreakdown": "Breakdown by owner",
+      "ownerShare": "share",
+      "dayDetail": "Expenses {date}",
+      "dayTotal": "Total",
+      "dayOwnerBreakdown": "By owner",
+      "closeDay": "Close",
+      "reimbursement": "Reimbursement"
     }
   },
   "Activity": {

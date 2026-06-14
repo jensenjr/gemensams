@@ -128,6 +128,15 @@
       "cancel": "Avbryt"
     }
   },
+  "Owners": {
+    "label": "Ägare",
+    "hans": "Hans",
+    "hennes": "Hennes",
+    "gemensamt": "Gemensamt",
+    "ovrigt": "Övrigt",
+    "advancedSection": "Fler alternativ",
+    "saveAndNew": "Spara och ny"
+  },
   "ExpenseForm": {
     "Income": {
       "create": "Skapa inkomst",
@@ -312,6 +321,31 @@
       "yourSpendings": "Dina totala utgifter",
       "yourEarnings": "Dina totala inkomster",
       "yourShare": "Din totala andel"
+    },
+    "Dashboard": {
+      "title": "Utgiftsöversikt",
+      "description": "Vart tog pengarna vägen? Vem spenderade vad?",
+      "filterOwner": "Ägare",
+      "filterOwnerAll": "Alla ägare",
+      "filterCategory": "Kategori",
+      "filterCategoryAll": "Alla kategorier",
+      "filterRange": "Period",
+      "rangeThisMonth": "Denna månad",
+      "rangeLastMonth": "Förra månaden",
+      "rangeLast3Months": "Senaste 3 månader",
+      "rangeThisYear": "Detta år",
+      "rangeCustom": "Anpassad",
+      "rangeFrom": "Från",
+      "rangeTo": "Till",
+      "chartTitle": "Utgifter per dag",
+      "noData": "Inga utgifter för vald period.",
+      "ownerBreakdown": "Fördelning per ägare",
+      "ownerShare": "andel",
+      "dayDetail": "Utgifter {date}",
+      "dayTotal": "Totalt",
+      "dayOwnerBreakdown": "Per ägare",
+      "closeDay": "Stäng",
+      "reimbursement": "Återbetalning"
     }
   },
   "Activity": {

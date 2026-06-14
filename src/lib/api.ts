@@ -1,3 +1,4 @@
+import { Owner, ownerFromExpense } from '@/lib/owners'
 import { prisma } from '@/lib/prisma'
 import { ExpenseFormValues, GroupFormValues } from '@/lib/schemas'
 import {
@@ -636,4 +637,244 @@ function isDateInNextMonth(
   }
 
   return true
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard attribution helpers
+// ---------------------------------------------------------------------------
+
+/** Minimal shape of an expense used by attribution queries */
+type AttributableExpense = {
+  id: string
+  title: string
+  amount: number
+  expenseDate: Date
+  isReimbursement: boolean
+  category: { id: number; name: string; grouping: string } | null
+  paidFor: { participant: { id: string; name: string } }[]
+}
+
+/** Internal: fetch all group expenses with the fields needed for attribution */
+async function getAttributableExpenses(groupId: string) {
+  await createRecurringExpenses()
+  return prisma.expense.findMany({
+    where: { groupId },
+    select: {
+      id: true,
+      title: true,
+      amount: true,
+      expenseDate: true,
+      isReimbursement: true,
+      category: { select: { id: true, name: true, grouping: true } },
+      paidFor: {
+        select: { participant: { select: { id: true, name: true } } },
+      },
+    },
+    orderBy: [{ expenseDate: 'asc' }, { id: 'asc' }],
+  })
+}
+
+/** Internal: derive owner for one expense given the group participants list */
+function deriveOwner(
+  participants: { id: string; name: string }[],
+  expense: Pick<AttributableExpense, 'paidFor'>,
+): Owner {
+  return ownerFromExpense(
+    participants,
+    expense.paidFor.map((pf) => pf.participant.id),
+  )
+}
+
+// ---------------------------------------------------------------------------
+// spendByOwner
+// ---------------------------------------------------------------------------
+
+export type OwnerTotals = Record<Owner, number> & { grandTotal: number }
+
+export interface SpendByOwnerFilters {
+  /** Inclusive start date (UTC day boundary). Absent = all time. */
+  from?: Date
+  /** Inclusive end date (UTC day boundary). Absent = all time. */
+  to?: Date
+  /** Filter by category id */
+  categoryId?: number
+  /** Filter by owner */
+  owner?: Owner
+}
+
+/**
+ * Returns total spending per owner + grand total over the filtered range.
+ * Amounts are integers in minor units (öre for SEK).
+ * Reimbursements are excluded.
+ */
+export async function spendByOwner(
+  groupId: string,
+  filters: SpendByOwnerFilters = {},
+): Promise<OwnerTotals> {
+  const group = await getGroup(groupId)
+  if (!group) throw new Error(`Invalid group ID: ${groupId}`)
+
+  const expenses = await getAttributableExpenses(groupId)
+
+  const totals: OwnerTotals = {
+    hans: 0,
+    hennes: 0,
+    gemensamt: 0,
+    ovrigt: 0,
+    grandTotal: 0,
+  }
+
+  for (const expense of expenses) {
+    if (expense.isReimbursement) continue
+
+    // Date filter (compare UTC date strings to avoid TZ drift)
+    const expDate = expense.expenseDate
+    if (filters.from && expDate < filters.from) continue
+    if (filters.to) {
+      // to is inclusive: expense date must be <= to (day boundary)
+      const toEnd = new Date(filters.to)
+      toEnd.setUTCDate(toEnd.getUTCDate() + 1)
+      if (expDate >= toEnd) continue
+    }
+
+    // Category filter
+    if (
+      filters.categoryId !== undefined &&
+      expense.category?.id !== filters.categoryId
+    )
+      continue
+
+    const owner = deriveOwner(group.participants, expense)
+
+    // Owner filter
+    if (filters.owner !== undefined && owner !== filters.owner) continue
+
+    totals[owner] += expense.amount
+    totals.grandTotal += expense.amount
+  }
+
+  return totals
+}
+
+// ---------------------------------------------------------------------------
+// expensesForDay
+// ---------------------------------------------------------------------------
+
+export type DayExpense = {
+  id: string
+  title: string
+  amount: number
+  owner: Owner
+  category: { id: number; name: string; grouping: string } | null
+  isReimbursement: boolean
+}
+
+/**
+ * Returns all expenses on a given calendar day (UTC), each annotated with its owner.
+ */
+export async function expensesForDay(
+  groupId: string,
+  date: Date,
+): Promise<DayExpense[]> {
+  const group = await getGroup(groupId)
+  if (!group) throw new Error(`Invalid group ID: ${groupId}`)
+
+  // Build UTC day range
+  const dayStart = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()),
+  )
+  const dayEnd = new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1),
+  )
+
+  const raw = await prisma.expense.findMany({
+    where: {
+      groupId,
+      expenseDate: { gte: dayStart, lt: dayEnd },
+    },
+    select: {
+      id: true,
+      title: true,
+      amount: true,
+      expenseDate: true,
+      isReimbursement: true,
+      category: { select: { id: true, name: true, grouping: true } },
+      paidFor: {
+        select: { participant: { select: { id: true, name: true } } },
+      },
+    },
+    orderBy: [{ expenseDate: 'asc' }, { id: 'asc' }],
+  })
+
+  return raw.map((e) => ({
+    id: e.id,
+    title: e.title,
+    amount: e.amount,
+    owner: deriveOwner(group.participants, e),
+    category: e.category,
+    isReimbursement: e.isReimbursement,
+  }))
+}
+
+// ---------------------------------------------------------------------------
+// spendByDay
+// ---------------------------------------------------------------------------
+
+export type DaySpend = {
+  /** ISO date string YYYY-MM-DD */
+  date: string
+  total: number
+  perOwner: Record<Owner, number>
+}
+
+/**
+ * Returns daily spending totals (and per-owner breakdown) over a date range.
+ * Reimbursements are excluded.
+ */
+export async function spendByDay(
+  groupId: string,
+  filters: SpendByOwnerFilters & { from: Date; to: Date },
+): Promise<DaySpend[]> {
+  const group = await getGroup(groupId)
+  if (!group) throw new Error(`Invalid group ID: ${groupId}`)
+
+  const expenses = await getAttributableExpenses(groupId)
+
+  const map = new Map<string, DaySpend>()
+
+  for (const expense of expenses) {
+    if (expense.isReimbursement) continue
+
+    const expDate = expense.expenseDate
+    if (expDate < filters.from) continue
+    const toEnd = new Date(filters.to)
+    toEnd.setUTCDate(toEnd.getUTCDate() + 1)
+    if (expDate >= toEnd) continue
+
+    if (
+      filters.categoryId !== undefined &&
+      expense.category?.id !== filters.categoryId
+    )
+      continue
+
+    const owner = deriveOwner(group.participants, expense)
+    if (filters.owner !== undefined && owner !== filters.owner) continue
+
+    const dateStr = expDate.toISOString().slice(0, 10)
+    if (!map.has(dateStr)) {
+      map.set(dateStr, {
+        date: dateStr,
+        total: 0,
+        perOwner: { hans: 0, hennes: 0, gemensamt: 0, ovrigt: 0 },
+      })
+    }
+    const entry = map.get(dateStr)!
+    entry.total += expense.amount
+    entry.perOwner[owner] += expense.amount
+  }
+
+  // Return sorted by date
+  return Array.from(map.values()).sort((a, b) =>
+    a.date.localeCompare(b.date),
+  )
 }

@@ -3,14 +3,12 @@ import { LocaleSwitcher } from '@/components/locale-switcher'
 import { ProgressBar } from '@/components/progress-bar'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/toaster'
 import { env } from '@/lib/env'
 import { TRPCProvider } from '@/trpc/client'
 import type { Metadata, Viewport } from 'next'
 import { NextIntlClientProvider, useTranslations } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
-import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import './globals.css'
@@ -61,37 +59,35 @@ export const viewport: Viewport = {
   themeColor: '#047857',
 }
 
+/** Gemensams wordmark — inline SVG so it renders reliably without asset dependency */
+function GemensamsWordmark({ className }: { className?: string }) {
+  return (
+    <span
+      className={
+        className ??
+        'font-bold text-lg tracking-tight text-emerald-700 dark:text-emerald-400'
+      }
+    >
+      Gemensams
+    </span>
+  )
+}
+
 function Content({ children }: { children: React.ReactNode }) {
   const t = useTranslations()
   return (
     <TRPCProvider>
       <header className="fixed top-0 left-0 right-0 h-16 flex justify-between bg-white dark:bg-gray-950 bg-opacity-50 dark:bg-opacity-50 p-2 border-b backdrop-blur-sm z-50">
         <Link
-          className="flex items-center gap-2 hover:scale-105 transition-transform"
+          className="flex items-center gap-2 px-2 hover:scale-105 transition-transform"
           href="/"
         >
           <h1>
-            <Image
-              src="/logo-with-text.png"
-              className="m-1 h-auto w-auto"
-              width={(35 * 522) / 180}
-              height={35}
-              alt="Gemensams"
-            />
+            <GemensamsWordmark />
           </h1>
         </Link>
         <div role="navigation" aria-label="Menu" className="flex">
           <ul className="flex items-center text-sm">
-            <li>
-              <Button
-                variant="ghost"
-                size="sm"
-                asChild
-                className="-my-3 text-primary"
-              >
-                <Link href="/groups">{t('Header.groups')}</Link>
-              </Button>
-            </li>
             <li>
               <LocaleSwitcher />
             </li>
@@ -108,15 +104,12 @@ function Content({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col space-y-2">
           <div className="sm:text-lg font-semibold text-base flex space-x-2 items-center">
             <Link className="flex items-center gap-2" href="/">
-              <Image
-                src="/logo-with-text.png"
-                className="m-1 h-auto w-auto"
-                width={(35 * 522) / 180}
-                height={35}
-                alt="Gemensams"
-              />
+              <GemensamsWordmark />
             </Link>
           </div>
+          <p className="text-muted-foreground text-xs max-w-xs">
+            ekonomi för de med gemensam ekonomi som gör dig transparent
+          </p>
           <div className="flex flex-col space-y a--no-underline-text-white">
             <span>{t('Footer.madeIn')}</span>
             <span>
@@ -154,7 +147,7 @@ export default async function RootLayout({
   const messages = await getMessages()
   return (
     <html lang={locale} suppressHydrationWarning>
-      <ApplePwaSplash icon="/logo-with-text.png" color="#027756" />
+      <ApplePwaSplash icon="/logo.svg" color="#027756" />
       <body className="min-h-[100dvh] flex flex-col items-stretch bg-slate-50 bg-opacity-30 dark:bg-background">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider

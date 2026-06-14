@@ -1,10 +1,6 @@
-import { RecentGroupList } from '@/app/groups/recent-group-list'
-import { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = {
-  title: 'Recently visited groups',
-}
-
-export default async function GroupsPage() {
-  return <RecentGroupList />
+// The app has a single household — skip the groups list.
+export default function GroupsPage() {
+  redirect('/groups/hushallet')
 }
