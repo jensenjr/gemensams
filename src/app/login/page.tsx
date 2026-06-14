@@ -1,5 +1,3 @@
-import Image from 'next/image'
-
 export const metadata = {
   title: 'Logga in · Gemensams',
 }
@@ -15,13 +13,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main className="min-h-[100dvh] flex items-center justify-center bg-slate-50 dark:bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center gap-3">
-          <Image
-            src="/logo-with-text.png"
-            width={(40 * 522) / 180}
-            height={40}
-            alt="Gemensams"
-            priority
-          />
+          <span className="text-2xl font-bold tracking-tight text-foreground">
+            Gemensams
+          </span>
           <p className="text-sm text-muted-foreground text-center">
             Ange lösenordet för att komma åt hushållets ekonomi.
           </p>

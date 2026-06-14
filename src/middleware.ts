@@ -44,11 +44,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Redirect to login, preserving the intended destination
-  const loginUrl = request.nextUrl.clone()
-  loginUrl.pathname = '/login'
-  loginUrl.search = `from=${encodeURIComponent(pathname)}`
-  return NextResponse.redirect(loginUrl)
+  // Redirect to login, preserving the intended destination.
+  // Use a RELATIVE Location so it resolves against the real (proxied) host —
+  // request.nextUrl points at the internal localhost:3000 behind a reverse proxy.
+  const loginPath = `/login?from=${encodeURIComponent(pathname)}`
+  return new NextResponse(null, {
+    status: 307,
+    headers: { Location: loginPath },
+  })
 }
 
 export const config = {
