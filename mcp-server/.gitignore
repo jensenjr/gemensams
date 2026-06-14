@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+# generated Prisma client (created by `npm run build`)
+prisma/

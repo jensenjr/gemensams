@@ -1,0 +1,56 @@
+# Gemensams MCP Server — standalone compose file.
+#
+# USAGE
+#   docker compose -f mcp-server/compose.mcp.yaml up -d
+#
+# This runs ONLY the MCP server. It must reach the SAME Postgres instance
+# as the web app. Two options:
+#
+#  (A) Attach to the web app's Docker network (recommended on same host):
+#        Uncomment the `networks` section at the bottom and set
+#        EXTERNAL_DB_NETWORK to the web app's Docker network name, e.g.:
+#          docker network ls   # find e.g. "gemensams_default"
+#        Then set POSTGRES_PRISMA_URL to use the Postgres container hostname.
+#
+#  (B) Point at an external Postgres URL (Coolify managed DB, Supabase, etc.):
+#        Just set POSTGRES_PRISMA_URL to the full connection string.
+#
+# REQUIRED ENV VARS (set in .env or shell):
+#   POSTGRES_PRISMA_URL          Postgres URL (pooling, required)
+#   POSTGRES_URL_NON_POOLING     Postgres direct URL (optional, used by Prisma migrations)
+#   MCP_AUTH_TOKEN               Secret bearer token for HTTP auth (required)
+#
+# OPTIONAL:
+#   GEMENSAMS_GROUP_ID           Household group id (default: hushallet)
+#   PORT                         HTTP port inside container (default: 8787)
+#   EXTERNAL_DB_NETWORK          Name of an external Docker network to join
+
+services:
+  mcp-server:
+    build:
+      context: ..
+      dockerfile: mcp-server/Dockerfile
+    image: gemensams-mcp-server:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${PORT:-8787}
+      POSTGRES_PRISMA_URL: ${POSTGRES_PRISMA_URL}
+      POSTGRES_URL_NON_POOLING: ${POSTGRES_URL_NON_POOLING:-}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN}
+      GEMENSAMS_GROUP_ID: ${GEMENSAMS_GROUP_ID:-hushallet}
+    # Do NOT expose the port publicly — put it behind a reverse proxy / Cloudflare tunnel.
+    # To expose locally for testing:
+    #   ports:
+    #     - "127.0.0.1:8787:8787"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8787/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+# Uncomment to join the web app's Docker network (option A above):
+# networks:
+#   default:
+#     external: true
+#     name: ${EXTERNAL_DB_NETWORK:-gemensams_default}

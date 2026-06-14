@@ -1,0 +1,25 @@
+{
+  "name": "gemensams-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server exposing the Gemensams household expense ledger over stdio and HTTP",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build": "npm run prisma:generate && tsup",
+    "prisma:generate": "prisma generate --schema=../prisma/schema.prisma",
+    "start:stdio": "node dist/stdio.js",
+    "start:http": "node dist/http.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "@prisma/client": "^6.9.0",
+    "nanoid": "^3.3.8",
+    "prisma": "^6.9.0",
+    "zod": "^3.25.56"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.3",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3"
+  }
+}
