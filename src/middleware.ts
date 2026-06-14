@@ -44,14 +44,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  // Redirect to login, preserving the intended destination.
-  // Use a RELATIVE Location so it resolves against the real (proxied) host —
-  // request.nextUrl points at the internal localhost:3000 behind a reverse proxy.
-  const loginPath = `/login?from=${encodeURIComponent(pathname)}`
-  return new NextResponse(null, {
-    status: 307,
-    headers: { Location: loginPath },
-  })
+  // Build an ABSOLUTE login URL from the forwarded host. request.nextUrl resolves
+  // to the internal localhost:3000 behind Coolify/Traefik, and a RELATIVE Location
+  // makes the edge runtime throw ERR_INVALID_URL — so derive the real origin from
+  // the proxy headers (Traefik sets X-Forwarded-Host / X-Forwarded-Proto).
+  const proto =
+    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ||
+    request.nextUrl.protocol.replace(':', '') ||
+    'https'
+  const host =
+    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+    request.headers.get('host') ||
+    request.nextUrl.host
+  const loginUrl = new URL('/login', `${proto}://${host}`)
+  loginUrl.searchParams.set('from', pathname)
+  return NextResponse.redirect(loginUrl)
 }
 
 export const config = {

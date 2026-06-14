@@ -8,6 +8,21 @@ function safePath(from: string | null | undefined): string {
   return from && from.startsWith('/') && !from.startsWith('//') ? from : '/'
 }
 
+/**
+ * Reconstruct the external origin from the proxy headers (Coolify/Traefik sets
+ * X-Forwarded-Host / X-Forwarded-Proto). Building from request.nextUrl would
+ * point at the internal localhost:3000.
+ */
+function externalOrigin(request: NextRequest): string {
+  const proto =
+    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() || 'https'
+  const host =
+    request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
+    request.headers.get('host') ||
+    request.nextUrl.host
+  return `${proto}://${host}`
+}
+
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
   const password = (formData.get('password') as string | null) ?? ''
@@ -18,27 +33,20 @@ export async function POST(request: NextRequest) {
   const match =
     appPassword.length > 0 && (await timingSafeEqual(password, appPassword))
 
-  // IMPORTANT: use RELATIVE Location headers. Building absolute URLs from
-  // request.nextUrl resolves to the internal localhost:3000 behind a reverse
-  // proxy (Coolify/Traefik); relative paths resolve against the real host.
+  const origin = externalOrigin(request)
+
   if (!match) {
-    const params = new URLSearchParams()
+    const loginUrl = new URL('/login', origin)
     const dest = safePath(from)
-    if (dest !== '/') params.set('from', dest)
-    params.set('error', '1')
-    return new NextResponse(null, {
-      status: 303,
-      headers: { Location: `/login?${params.toString()}` },
-    })
+    if (dest !== '/') loginUrl.searchParams.set('from', dest)
+    loginUrl.searchParams.set('error', '1')
+    return NextResponse.redirect(loginUrl, 303)
   }
 
   const token = await createSessionToken()
   const isProduction = process.env.NODE_ENV === 'production'
 
-  const response = new NextResponse(null, {
-    status: 303,
-    headers: { Location: safePath(from) },
-  })
+  const response = NextResponse.redirect(new URL(safePath(from), origin), 303)
   response.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
     sameSite: 'lax',
