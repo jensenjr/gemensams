@@ -530,6 +530,65 @@ export function ExpenseForm({
               </div>
             </div>
 
+            {/* Belopp (amount) — primary fast-entry field */}
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field: { onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel>{t('amountField.label')}</FormLabel>
+                  <div className="flex items-baseline gap-2">
+                    <span>{group.currency}</span>
+                    <FormControl>
+                      <Input
+                        className="text-base max-w-[140px]"
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="0.00"
+                        autoFocus
+                        onChange={(event) => {
+                          const v = enforceCurrencyPattern(event.target.value)
+                          const income = Number(v) < 0
+                          setIsIncome(income)
+                          if (income) form.setValue('isReimbursement', false)
+                          onChange(v)
+                        }}
+                        onFocus={(e) => {
+                          // small delay to work around Safari's onMouseUp deselect
+                          const target = e.currentTarget
+                          setTimeout(() => target.select(), 1)
+                        }}
+                        {...field}
+                      />
+                    </FormControl>
+                  </div>
+                  <FormMessage />
+
+                  {!isIncome && (
+                    <FormField
+                      control={form.control}
+                      name="isReimbursement"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row gap-2 items-center space-y-0 pt-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div>
+                            <FormLabel>
+                              {t('isReimbursementField.label')}
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="title"
@@ -756,63 +815,6 @@ export function ExpenseForm({
                     {t(`${sExpense}.categoryFieldDescription`)}
                   </FormDescription>
                   <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field: { onChange, ...field } }) => (
-                <FormItem className="sm:order-5">
-                  <FormLabel>{t('amountField.label')}</FormLabel>
-                  <div className="flex items-baseline gap-2">
-                    <span>{group.currency}</span>
-                    <FormControl>
-                      <Input
-                        className="text-base max-w-[120px]"
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="0.00"
-                        onChange={(event) => {
-                          const v = enforceCurrencyPattern(event.target.value)
-                          const income = Number(v) < 0
-                          setIsIncome(income)
-                          if (income) form.setValue('isReimbursement', false)
-                          onChange(v)
-                        }}
-                        onFocus={(e) => {
-                          // we're adding a small delay to get around safaris issue with onMouseUp deselecting things again
-                          const target = e.currentTarget
-                          setTimeout(() => target.select(), 1)
-                        }}
-                        {...field}
-                      />
-                    </FormControl>
-                  </div>
-                  <FormMessage />
-
-                  {!isIncome && (
-                    <FormField
-                      control={form.control}
-                      name="isReimbursement"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row gap-2 items-center space-y-0 pt-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <div>
-                            <FormLabel>
-                              {t('isReimbursementField.label')}
-                            </FormLabel>
-                          </div>
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </FormItem>
               )}
             />
