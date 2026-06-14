@@ -1,3 +1,6 @@
+# Phase 0/1 stack: app + Postgres only.
+# MinIO (receipt object storage) returns in Phase 2 when receipt uploads are enabled;
+# it's intentionally omitted now to keep the deploy minimal and avoid host-port conflicts.
 services:
   app:
     build: .
@@ -6,27 +9,19 @@ services:
     ports:
       - '3000:3000'
     environment:
-      # Prisma reads these two. They are built from the Postgres creds and have a
-      # working default, so the stack boots even before you set anything in Coolify.
-      # Override POSTGRES_PASSWORD (in the Coolify UI / container.env) BEFORE first deploy.
+      # Prisma reads these two; built from the Postgres creds, with a working default
+      # so the stack boots even before anything is set in the Coolify UI.
+      # Override POSTGRES_PASSWORD BEFORE the first deploy (Postgres bakes it on init).
       POSTGRES_PRISMA_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-gemensams_db_pw}@db:5432/${POSTGRES_DB:-postgres}
       POSTGRES_URL_NON_POOLING: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-gemensams_db_pw}@db:5432/${POSTGRES_DB:-postgres}
-      # App. APP_PASSWORD/APP_SECRET have no default on purpose — set them for a secure
-      # login (the app still boots without them; the login just won't be usable/secure).
       NEXT_PUBLIC_BASE_URL: ${NEXT_PUBLIC_BASE_URL:-https://gemensams.krut.it}
+      # Set these for a secure login (app still boots without them).
       APP_PASSWORD: ${APP_PASSWORD:-}
       APP_SECRET: ${APP_SECRET:-}
-      # Receipt uploads (MinIO). Off until Phase 2.
+      # Receipt uploads arrive in Phase 2 — keep disabled for now.
       NEXT_PUBLIC_ENABLE_EXPENSE_DOCUMENTS: ${NEXT_PUBLIC_ENABLE_EXPENSE_DOCUMENTS:-false}
-      S3_UPLOAD_KEY: ${MINIO_ROOT_USER:-gemensams}
-      S3_UPLOAD_SECRET: ${MINIO_ROOT_PASSWORD:-gemensams_minio_pw}
-      S3_UPLOAD_BUCKET: ${S3_UPLOAD_BUCKET:-receipts}
-      S3_UPLOAD_REGION: ${S3_UPLOAD_REGION:-us-east-1}
-      S3_UPLOAD_ENDPOINT: ${S3_UPLOAD_ENDPOINT:-http://minio:9000}
     depends_on:
       db:
-        condition: service_healthy
-      minio:
         condition: service_healthy
     networks:
       - gemensams_network
@@ -40,6 +35,10 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gemensams_db_pw}
       POSTGRES_DB: ${POSTGRES_DB:-postgres}
+      # Initialize into a SUBDIRECTORY of the volume. A non-empty volume root
+      # (lost+found, or a half-initialized data dir from a previously failed deploy)
+      # otherwise makes Postgres exit immediately on startup.
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -47,47 +46,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-    networks:
-      - gemensams_network
-
-  minio:
-    image: minio/minio:latest
-    restart: unless-stopped
-    command: server /data --console-address ":9001"
-    # Internal-only (no public host ports). The app reaches it at http://minio:9000
-    # on the compose network. A public console/route can be added in Phase 2.
-    expose:
-      - 9000   # S3 API
-      - 9001   # web console
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-gemensams}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-gemensams_minio_pw}
-    volumes:
-      - minio_data:/data
-    healthcheck:
-      test: ['CMD', 'mc', 'ready', 'local']
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - gemensams_network
-
-  createbucket:
-    image: minio/mc:latest
-    depends_on:
-      minio:
-        condition: service_healthy
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-gemensams}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-gemensams_minio_pw}
-      S3_UPLOAD_BUCKET: ${S3_UPLOAD_BUCKET:-receipts}
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 \"$${MINIO_ROOT_USER}\" \"$${MINIO_ROOT_PASSWORD}\" &&
-      mc mb --ignore-existing local/\"$${S3_UPLOAD_BUCKET}\" &&
-      mc anonymous set download local/\"$${S3_UPLOAD_BUCKET}\" &&
-      echo 'Bucket ready.'
-      "
+      start_period: 30s
     networks:
       - gemensams_network
 
@@ -97,4 +56,3 @@ networks:
 
 volumes:
   postgres_data:
-  minio_data:
