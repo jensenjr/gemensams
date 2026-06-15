@@ -7,10 +7,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
 export type DateTimeStyle = NonNullable<
   ConstructorParameters<typeof Intl.DateTimeFormat>[1]
 >['dateStyle']
@@ -154,14 +150,4 @@ export function formatFileSize(size: number, locale: string) {
   if (size > 1024 ** 2) return `${formatNumber(size / 1024 ** 2)} MB`
   if (size > 1024) return `${formatNumber(size / 1024)} kB`
   return `${formatNumber(size)} B`
-}
-
-export function normalizeString(input: string): string {
-  // Replaces special characters
-  // Input: áäåèéę
-  // Output: aaaeee
-  return input
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
 }
