@@ -11,8 +11,9 @@
     "groups": "Grupper"
   },
   "Footer": {
-    "madeIn": "Made in Montréal, Québec 🇨🇦",
-    "builtBy": "Byggt av <author>Sebastien Castiel</author> och <source>bidragsgivare</source>"
+    "tagline": "ekonomi för de med gemensam ekonomi som gör dig transparent",
+    "basedOn": "Baserat på <spliit>Spliit</spliit> (MIT) av Sebastien Castiel och bidragsgivare",
+    "rerunOnboarding": "Kör introduktionen igen"
   },
   "Expenses": {
     "title": "Utgifter",
@@ -544,6 +545,44 @@
     },
     "other": {
       "heading": "Övriga valutor"
+    }
+  },
+  "Onboarding": {
+    "stepOf": "Steg {current} av {total}",
+    "skipAll": "Hoppa över allt",
+    "step1": {
+      "title": "Välkommen till Gemensams",
+      "tagline": "ekonomi för de med gemensam ekonomi som gör dig transparent",
+      "description1": "Logga varje köp och tilldela det till rätt ägare — hans, hennes eller gemensamt — så ser ni båda exakt var pengarna tar vägen.",
+      "description2": "Gemensam friktion är en funktion, inte en bugg: varje utgift du för in skapar medvetenhet om er gemensamma ekonomi.",
+      "description3": "Importera kontoutdrag direkt från banken eller skriv in utgifter för hand — allt samlas på ett ställe.",
+      "cta": "Kom igång"
+    },
+    "step2": {
+      "title": "Namnge ert hushåll",
+      "description": "Vad ska hushållet heta? Det visas i appen och i exporterna.",
+      "nameLabel": "Hushållsnamn",
+      "namePlaceholder": "Hushållet",
+      "next": "Nästa"
+    },
+    "step3": {
+      "title": "Vilka bor här?",
+      "description": "Lägg till de som ingår i hushållet. Du behöver minst två deltagare.",
+      "namePlaceholder": "Namn",
+      "addParticipant": "Lägg till person",
+      "minError": "Du behöver minst 2 deltagare.",
+      "next": "Nästa"
+    },
+    "step4": {
+      "title": "Konton (valfritt)",
+      "description": "Koppla bankkonton till deltagarna — det gör det enkelt att importera kontoutdrag och tilldela utgifter rätt ägare automatiskt.",
+      "skip": "Hoppa över",
+      "next": "Nästa"
+    },
+    "step5": {
+      "title": "Allt klart!",
+      "description": "Hushållet är nu redo. Du kan när som helst ändra namn, deltagare och konton under Inställningar.",
+      "finish": "Gå till hushållet"
     }
   }
 }

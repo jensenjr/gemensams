@@ -335,6 +335,13 @@ export async function getGroup(groupId: string) {
   })
 }
 
+export async function completeOnboarding(groupId: string) {
+  return prisma.group.update({
+    where: { id: groupId },
+    data: { onboardedAt: new Date() },
+  })
+}
+
 export async function getCategories() {
   return prisma.category.findMany()
 }

@@ -11,8 +11,9 @@
     "groups": "Groups"
   },
   "Footer": {
-    "madeIn": "Made in Montréal, Québec 🇨🇦",
-    "builtBy": "Built by <author>Sebastien Castiel</author> and <source>contributors</source>"
+    "tagline": "household finance that makes you transparent",
+    "basedOn": "Based on <spliit>Spliit</spliit> (MIT) by Sebastien Castiel and contributors",
+    "rerunOnboarding": "Re-run introduction"
   },
   "Expenses": {
     "title": "Expenses",
@@ -544,6 +545,44 @@
     },
     "other": {
       "heading": "Other currencies"
+    }
+  },
+  "Onboarding": {
+    "stepOf": "Step {current} of {total}",
+    "skipAll": "Skip setup",
+    "step1": {
+      "title": "Welcome to Gemensams",
+      "tagline": "household finance that makes you transparent",
+      "description1": "Log every purchase and assign it to the right owner — his, hers, or shared — so you both see exactly where the money goes.",
+      "description2": "Shared friction is a feature, not a bug: every expense you log creates awareness of your joint finances.",
+      "description3": "Import bank statements directly or enter expenses by hand — everything in one place.",
+      "cta": "Get started"
+    },
+    "step2": {
+      "title": "Name your household",
+      "description": "What should your household be called? It appears in the app and in exports.",
+      "nameLabel": "Household name",
+      "namePlaceholder": "Our Household",
+      "next": "Next"
+    },
+    "step3": {
+      "title": "Who lives here?",
+      "description": "Add the people who are part of the household. You need at least two participants.",
+      "namePlaceholder": "Name",
+      "addParticipant": "Add person",
+      "minError": "You need at least 2 participants.",
+      "next": "Next"
+    },
+    "step4": {
+      "title": "Accounts (optional)",
+      "description": "Link bank accounts to participants — this makes it easy to import statements and automatically assign expenses to the right owner.",
+      "skip": "Skip",
+      "next": "Next"
+    },
+    "step5": {
+      "title": "All done!",
+      "description": "Your household is ready. You can change names, participants, and accounts at any time in Settings.",
+      "finish": "Go to household"
     }
   }
 }

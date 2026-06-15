@@ -22,6 +22,7 @@ model Group {
   activities   Activity[]
   accounts     Account[]
   createdAt    DateTime      @default(now())
+  onboardedAt  DateTime?
 }
 
 enum AccountKind {

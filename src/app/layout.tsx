@@ -108,20 +108,14 @@ function Content({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
           <p className="text-muted-foreground text-xs max-w-xs">
-            ekonomi för de med gemensam ekonomi som gör dig transparent
+            {t('Footer.tagline')}
           </p>
-          <div className="flex flex-col space-y a--no-underline-text-white">
-            <span>{t('Footer.madeIn')}</span>
-            <span>
-              {t.rich('Footer.builtBy', {
-                author: (txt) => (
-                  <a href="https://scastiel.dev" target="_blank" rel="noopener">
-                    {txt}
-                  </a>
-                ),
-                source: (txt) => (
+          <div className="flex flex-col space-y-1">
+            <p className="text-muted-foreground text-xs">
+              {t.rich('Footer.basedOn', {
+                spliit: (txt) => (
                   <a
-                    href="https://github.com/spliit-app/spliit/graphs/contributors"
+                    href="https://github.com/spliit-app/spliit"
                     target="_blank"
                     rel="noopener"
                   >
@@ -129,7 +123,13 @@ function Content({ children }: { children: React.ReactNode }) {
                   </a>
                 ),
               })}
-            </span>
+            </p>
+            <Link
+              href="/onboarding"
+              className="text-xs text-muted-foreground underline hover:text-foreground transition-colors"
+            >
+              {t('Footer.rerunOnboarding')}
+            </Link>
           </div>
         </div>
       </footer>
