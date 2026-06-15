@@ -1,13 +1,9 @@
+import { accountFormSchema } from '@/lib/accounts'
 import { createAccount } from '@/lib/api'
 import { baseProcedure } from '@/trpc/init'
 import { z } from 'zod'
 
-export const accountFormSchema = z.object({
-  name: z.string().min(1),
-  kind: z.enum(['PERSONAL', 'SHARED', 'SAVINGS']),
-  ownerParticipantId: z.string().optional().nullable(),
-  accountNumbers: z.array(z.string()),
-})
+export { accountFormSchema }
 
 export const createGroupAccountProcedure = baseProcedure
   .input(

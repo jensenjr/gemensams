@@ -15,7 +15,9 @@ function safePath(from: string | null | undefined): string {
  */
 function externalOrigin(request: NextRequest): string {
   const proto =
-    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() || 'https'
+    request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim() ||
+    request.nextUrl.protocol.replace(':', '') ||
+    'https'
   const host =
     request.headers.get('x-forwarded-host')?.split(',')[0]?.trim() ||
     request.headers.get('host') ||

@@ -25,8 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { AccountKind } from '@/lib/accounts'
-import { accountFormSchema } from '@/trpc/routers/groups/accounts/create.procedure'
+import { AccountKind, accountFormSchema } from '@/lib/accounts'
 import { trpc } from '@/trpc/client'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Pencil, Plus, Trash2 } from 'lucide-react'

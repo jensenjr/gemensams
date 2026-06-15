@@ -5,7 +5,20 @@
  * Reused by the CSV import agent, tRPC procedures, and the MCP server.
  */
 
+import { z } from 'zod'
 import { GEMENSAMT, Owner, OwnerParticipant } from '@/lib/owners'
+
+/**
+ * Form schema for creating/editing an Account.
+ * Lives here (client-safe, no server imports) so both the Konton UI and the
+ * tRPC procedures can share it without dragging @trpc/server into the client bundle.
+ */
+export const accountFormSchema = z.object({
+  name: z.string().min(1),
+  kind: z.enum(['PERSONAL', 'SHARED', 'SAVINGS']),
+  ownerParticipantId: z.string().optional().nullable(),
+  accountNumbers: z.array(z.string()),
+})
 
 /** Mirror of the Prisma AccountKind enum (populated after migration). */
 export const AccountKind = {

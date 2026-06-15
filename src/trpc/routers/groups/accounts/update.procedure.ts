@@ -1,6 +1,6 @@
 import { updateAccount } from '@/lib/api'
 import { baseProcedure } from '@/trpc/init'
-import { accountFormSchema } from './create.procedure'
+import { accountFormSchema } from '@/lib/accounts'
 import { z } from 'zod'
 
 export const updateGroupAccountProcedure = baseProcedure
