@@ -1,3 +1,4 @@
+import { AccountKind, AccountRecord } from '@/lib/accounts'
 import { GEMENSAMT, Owner, ownerFromExpense } from '@/lib/owners'
 import { prisma } from '@/lib/prisma'
 import { ExpenseFormValues, GroupFormValues } from '@/lib/schemas'
@@ -637,6 +638,65 @@ function isDateInNextMonth(
   }
 
   return true
+}
+
+// ---------------------------------------------------------------------------
+// Account CRUD
+// ---------------------------------------------------------------------------
+
+export interface AccountFormValues {
+  name: string
+  kind: AccountKind
+  ownerParticipantId?: string | null
+  accountNumbers: string[]
+}
+
+export async function getAccounts(groupId: string): Promise<AccountRecord[]> {
+  return prisma.account.findMany({
+    where: { groupId },
+    orderBy: [{ createdAt: 'asc' }],
+  })
+}
+
+export async function createAccount(
+  groupId: string,
+  values: AccountFormValues,
+): Promise<AccountRecord> {
+  return prisma.account.create({
+    data: {
+      id: randomId(),
+      groupId,
+      name: values.name,
+      kind: values.kind,
+      ownerParticipantId:
+        values.kind === AccountKind.PERSONAL
+          ? (values.ownerParticipantId ?? null)
+          : null,
+      accountNumbers: values.accountNumbers,
+    },
+  })
+}
+
+export async function updateAccount(
+  accountId: string,
+  values: AccountFormValues,
+): Promise<AccountRecord> {
+  return prisma.account.update({
+    where: { id: accountId },
+    data: {
+      name: values.name,
+      kind: values.kind,
+      ownerParticipantId:
+        values.kind === AccountKind.PERSONAL
+          ? (values.ownerParticipantId ?? null)
+          : null,
+      accountNumbers: values.accountNumbers,
+    },
+  })
+}
+
+export async function deleteAccount(accountId: string): Promise<void> {
+  await prisma.account.delete({ where: { id: accountId } })
 }
 
 // ---------------------------------------------------------------------------

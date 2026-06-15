@@ -374,6 +374,37 @@
   "Settings": {
     "title": "Settings"
   },
+  "Accounts": {
+    "title": "Accounts",
+    "description": "Bank accounts linked to the group. Used during CSV import to attribute expenses and identify internal transfers.",
+    "add": "Add account",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this account?",
+    "noAccounts": "No accounts added yet.",
+    "saving": "Saving…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "NameField": {
+      "label": "Name",
+      "placeholder": "e.g. Christian's salary account"
+    },
+    "KindField": {
+      "label": "Type",
+      "personal": "Personal",
+      "shared": "Shared",
+      "savings": "Savings"
+    },
+    "OwnerField": {
+      "label": "Owner",
+      "placeholder": "Select participant"
+    },
+    "AccountNumbersField": {
+      "label": "Account numbers",
+      "placeholder": "e.g. 1234-56-789 01, 9876-54-321 00",
+      "description": "Comma-separated account numbers (used for matching during CSV import)."
+    }
+  },
   "Share": {
     "title": "Share",
     "description": "For other participants to see the group and add expenses, share its URL with them.",

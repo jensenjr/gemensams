@@ -20,7 +20,25 @@ model Group {
   participants Participant[]
   expenses     Expense[]
   activities   Activity[]
+  accounts     Account[]
   createdAt    DateTime      @default(now())
+}
+
+enum AccountKind {
+  PERSONAL
+  SHARED
+  SAVINGS
+}
+
+model Account {
+  id                 String      @id
+  groupId            String
+  name               String
+  kind               AccountKind @default(PERSONAL)
+  ownerParticipantId String?
+  accountNumbers     String[]
+  createdAt          DateTime    @default(now())
+  group              Group       @relation(fields: [groupId], references: [id], onDelete: Cascade)
 }
 
 model Participant {

@@ -374,6 +374,37 @@
   "Settings": {
     "title": "Inställningar"
   },
+  "Accounts": {
+    "title": "Konton",
+    "description": "Bankkonton kopplade till gruppen. Används vid CSV-import för att tilldela utgifter och identifiera interna överföringar.",
+    "add": "Lägg till konto",
+    "edit": "Redigera",
+    "delete": "Ta bort",
+    "deleteConfirm": "Är du säker på att du vill ta bort det här kontot?",
+    "noAccounts": "Inga konton har lagts till ännu.",
+    "saving": "Sparar…",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "NameField": {
+      "label": "Namn",
+      "placeholder": "t.ex. Christians lönekonto"
+    },
+    "KindField": {
+      "label": "Typ",
+      "personal": "Personligt",
+      "shared": "Gemensamt",
+      "savings": "Sparande"
+    },
+    "OwnerField": {
+      "label": "Ägare",
+      "placeholder": "Välj deltagare"
+    },
+    "AccountNumbersField": {
+      "label": "Kontonummer",
+      "placeholder": "t.ex. 1234-56-789 01, 9876-54-321 00",
+      "description": "Kommaseparerade kontonummer (för matchning vid CSV-import)."
+    }
+  },
   "Share": {
     "title": "Dela",
     "description": "För att andra deltagare ska kunna se gruppen och lägga till utgifter, dela dess URL med dem.",
