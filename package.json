@@ -21,6 +21,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
     "@formatjs/intl-localematcher": "^0.5.4",
     "@hookform/resolvers": "^3.3.2",
     "@json2csv/plainjs": "^7.0.6",
@@ -58,7 +59,6 @@
     "next-s3-upload": "^0.3.4",
     "next-themes": "^0.2.1",
     "next13-progressbar": "^1.1.1",
-    "openai": "^4.25.0",
     "pg": "^8.11.3",
     "prisma": "^6.18.0",
     "react": "^19.2.1",
